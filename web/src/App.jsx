@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ChatDiiwan from './ChatDiiwan';
 import CarteDiiwan from './CarteDiiwan';
 import GraphiqueDiiwan from './GraphiqueDiiwan';
-import { Map, BarChart2, Table, Info, AlertCircle, Moon, Sun } from 'lucide-react';
+import { Map, BarChart2, Table, Info, AlertCircle, Moon, Sun, HelpCircle } from 'lucide-react';
 
 const INDICATORS = [
   { key: 'population', label: 'Population' },
@@ -31,9 +31,10 @@ const INDICATOR_MAP_TEXT = {
 };
 
 export default function App() {
-  const [mockMode, setMockMode] = useState(true);
+  const [mockMode, setMockMode] = useState(false);
   const [inputQuestion, setInputQuestion] = useState('');
   const [theme, setTheme] = useState('dark');
+  const [showHelp, setShowHelp] = useState(false);
   
   // Map Sync states
   const [selectedIndicator, setSelectedIndicator] = useState('population');
@@ -136,8 +137,110 @@ export default function App() {
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span>{theme === 'dark' ? 'Clair' : 'Sombre'}</span>
           </button>
+
+          {/* Help button */}
+          <button
+            id="btn-aide"
+            onClick={() => setShowHelp(true)}
+            title="Aide"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '34px',
+              height: '34px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '50%',
+              color: '#10b981',
+              fontSize: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; }}
+          >
+            <HelpCircle size={17} />
+          </button>
         </div>
       </header>
+
+      {/* Help Modal */}
+      {showHelp && (
+        <div
+          id="modale-aide"
+          onClick={(e) => e.target === e.currentTarget && setShowHelp(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.65)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <div style={{
+            background: theme === 'dark' ? '#1e293b' : '#f8fafc',
+            border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`,
+            borderRadius: '20px',
+            padding: '32px',
+            maxWidth: '480px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <HelpCircle size={24} color="#10b981" />
+              <h2 style={{ margin: 0, fontSize: '18px', color: theme === 'dark' ? '#fff' : '#0f172a' }}>
+                Comment utiliser Diiwan ?
+              </h2>
+            </div>
+            <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#94a3b8', lineHeight: 1.6 }}>
+              Posez vos questions en <strong style={{color:'#10b981'}}>français naturel</strong> sur les régions du Sénégal entre 2020 et 2024.
+            </p>
+
+            {/* Indicators */}
+            <h3 style={{ margin: '0 0 10px', fontSize: '14px', color: '#10b981' }}>📊 Indicateurs disponibles</h3>
+            <ul style={{ margin: '0 0 20px', paddingLeft: '18px', color: theme === 'dark' ? '#cbd5e1' : '#334155', fontSize: '13px', lineHeight: 2 }}>
+              {[
+                'Population', 'Taux de chômage (%)', 'Taux de pauvreté (%)',
+                "Taux d'alphabétisation (%)", "Taux d'urbanisation (%)",
+                'Taux de scolarisation (%)', "Accès à Internet (%)",
+                'Centres de santé (nb)', 'Production céréalière (tonnes)'
+              ].map(ind => <li key={ind}>{ind}</li>)}
+            </ul>
+
+            {/* Examples */}
+            <h3 style={{ margin: '0 0 10px', fontSize: '14px', color: '#10b981' }}>💡 Exemples de questions</h3>
+            <ul style={{ margin: '0 0 28px', paddingLeft: '18px', color: theme === 'dark' ? '#94a3b8' : '#64748b', fontSize: '12px', lineHeight: 2.2, fontStyle: 'italic' }}>
+              {[
+                "Quelle est la population de Dakar en 2024 ?",
+                "Compare le chômage à Thiès et Saint-Louis.",
+                `"Montre l'évolution de l'accès internet à Matam de 2020 à 2024."`,
+                "Quelles sont les 5 régions les plus peuplées ?",
+                "Population totale du Sénégal en 2024 ?",
+              ].map(q => <li key={q}>{q}</li>)}
+            </ul>
+
+            <button
+              id="btn-aide-fermer"
+              onClick={() => setShowHelp(false)}
+              style={{
+                width: '100%', padding: '12px',
+                background: '#10b981', color: '#fff',
+                border: 'none', borderRadius: '10px',
+                fontSize: '15px', fontWeight: 600,
+                cursor: 'pointer', transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#059669'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#10b981'}
+            >
+              Compris !
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* Main Workspace */}
       <main className="app-grid">
@@ -153,13 +256,13 @@ export default function App() {
         </div>
 
         {/* Right Side: Interactive Visualization Panel */}
-        <div className="dashboard-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: '16px', gap: '16px', background: 'rgba(15, 23, 42, 0.2)' }}>
+        <div className="dashboard-panel" style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: '16px', gap: '16px', background: 'rgba(15, 23, 42, 0.2)' }}>
           
           {/* Tabs header & Selector controls */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', flexShrink: 0 }}>
+          <div style={{ boxSizing: 'border-box', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', flexShrink: 0, width: '100%' }}>
             
             {/* Visual Tabs toggle buttons */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', gap: '4px' }}>
+            <div style={{ boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', gap: '4px' }}>
               <button 
                 onClick={() => setActiveTab('carte')}
                 style={{

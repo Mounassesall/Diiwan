@@ -1,75 +1,117 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
+import json
+
 from rest_framework import status
-from django.core.serializers import serialize
-from django.http import HttpResponse
-from .models import RegionGeometrie
-from .analyseur import analyser_question
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .formatteur import construire_reponse, reponse_clarification, reponse_hors_perimetre
+from .ia_generative import resoudre_intention
 from .moteur_orm import generer_donnees
-from .ia_generative import generer_analyse_ia
-from .validateur import valider_intention
+from .models import RegionGeometrie, StatistiqueRegionale
+from .validateur import FIELDS_WHITELIST, valider_intention
+
+ANNEES_VALIDES = range(2020, 2025)
+
 
 class QuestionView(APIView):
     def post(self, request):
         try:
-            question = request.data.get("question")
-            if not question:
-                return Response({"error": "La clé 'question' est requise."}, status=status.HTTP_400_BAD_REQUEST)
-
-            intent = analyser_question(question)
+            question_brute = request.data.get("question")
+            if not question_brute:
+                return Response(
+                    {"error": "La clé 'question' est requise."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             
-            # Validation stricte des attributs extraits
+            # Troncature de sécurité pour éviter les requêtes démesurées et les abus du LLM
+            question = question_brute[:255]
+
+            intent = resoudre_intention(question)
+
             erreurs_validation = valider_intention(intent)
             if erreurs_validation:
-                return Response({
-                    "answer": "Votre requête contient des paramètres non autorisés.",
-                    "needs_clarification": True,
-                    "erreurs": erreurs_validation
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
-            # 2. Exécution de la requête en base de données
+                return Response(
+                    reponse_clarification(
+                        "Votre requête contient des paramètres non autorisés."
+                    ),
+                    status=status.HTTP_200_OK,
+                )
+
             resultat_brut = generer_donnees(intent)
-            
-            # Gestion des cas hors périmètre ou ambigus
+
             if resultat_brut.get("is_out_of_scope"):
-                return Response({
-                    "answer": resultat_brut.get("error")
-                }, status=status.HTTP_200_OK)
+                return Response(
+                    reponse_hors_perimetre(resultat_brut.get("error", "")),
+                    status=status.HTTP_200_OK,
+                )
 
             if resultat_brut.get("needs_clarification"):
-                return Response({
-                    "needs_clarification": True,
-                    "clarification_message": resultat_brut.get("error")
-                }, status=status.HTTP_200_OK)
-                
-            # 3. Interprétation par l'IA Générative
-            analyse = generer_analyse_ia(question, resultat_brut)
-            
-            # 4. Format JSON exact demandé (answer/table/chart/metadata)
-            return Response({
-                "answer": analyse,
-                "table": resultat_brut.get("data", []),
-                "chart": {
-                    "type": resultat_brut.get("chart_type"),
-                    "data": resultat_brut.get("data", [])
-                },
-                "metadata": {
-                    "source": resultat_brut.get("source", "Données fictives - Projet Diiwan"),
-                    "title": resultat_brut.get("title", ""),
-                    "intent": {
-                        "indicator": intent.indicator,
-                        "regions": intent.regions,
-                        "operation": intent.operation
-                    }
-                }
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            # Sécurité: masquer la trace technique à l'utilisateur
-            return Response({"error": "Une erreur interne est survenue. Veuillez réessayer."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    reponse_clarification(resultat_brut.get("error", "")),
+                    status=status.HTTP_200_OK,
+                )
+
+            return Response(
+                construire_reponse(intent, resultat_brut),
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception:
+            return Response(
+                {"error": "Une erreur interne est survenue. Veuillez réessayer."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def get(self, request):
+        return Response(
+            {"error": "Méthode non autorisée. Utilisez POST."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
 
 class RegionGeoJSONView(APIView):
     def get(self, request):
-        qs = RegionGeometrie.objects.all()
-        geojson_data = serialize('geojson', qs, geometry_field='geom', fields=('region',))
-        return HttpResponse(geojson_data, content_type="application/json")
+        indicator = request.GET.get("indicator", "population")
+        annee_param = request.GET.get("annee", "2024")
+
+        if indicator not in FIELDS_WHITELIST:
+            return Response(
+                {"error": f"Indicateur non autorisé : {indicator}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            annee = int(annee_param)
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "Le paramètre annee doit être un entier."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if annee not in ANNEES_VALIDES:
+            return Response(
+                {"error": "L'année doit être entre 2020 et 2024."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        stats = {
+            row.region: getattr(row, indicator)
+            for row in StatistiqueRegionale.objects.filter(annee=annee)
+        }
+
+        features = []
+        for region_geom in RegionGeometrie.objects.all():
+            value = stats.get(region_geom.region)
+            properties = {
+                "region": region_geom.region,
+                "value": float(value) if value is not None else None,
+                indicator: float(value) if value is not None else None,
+            }
+            features.append({
+                "type": "Feature",
+                "properties": properties,
+                "geometry": json.loads(region_geom.geom.geojson),
+            })
+
+        payload = {"type": "FeatureCollection", "features": features}
+        return Response(payload, content_type="application/json")

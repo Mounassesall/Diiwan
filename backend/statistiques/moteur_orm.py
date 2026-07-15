@@ -67,19 +67,19 @@ def generer_donnees(intent: QueryIntent) -> dict:
                 data.append({
                     "region": item.region,
                     "annee": item.annee,
-                    "value": getattr(item, indicator)
+                    "value": getattr(item, safe_indicator)
                 })
             regs = ", ".join(regions) if regions else "le Sénégal"
             title = f"Évolution : {ind_label} ({regs})"
             chart_type = "line"
-            
+
         elif intent.operation == "compare":
             qs = StatistiqueRegionale.objects.filter(annee=start_year, region__in=regions)
             for item in qs:
                 data.append({
                     "region": item.region,
                     "annee": item.annee,
-                    "value": getattr(item, indicator)
+                    "value": getattr(item, safe_indicator)
                 })
             title = f"Comparaison : {ind_label} en {start_year}"
             chart_type = "bar"
@@ -104,7 +104,7 @@ def generer_donnees(intent: QueryIntent) -> dict:
                 "value": res['total']
             })
             title = f"Total national : {ind_label} en {start_year}"
-            chart_type = "bar" # Pas très utile, mais valeur par défaut
+            chart_type = "bar"
 
         elif intent.operation == "average":
             res = StatistiqueRegionale.objects.filter(annee=start_year).aggregate(moyenne=Avg(safe_indicator))
@@ -115,7 +115,7 @@ def generer_donnees(intent: QueryIntent) -> dict:
             })
             title = f"Moyenne nationale : {ind_label} en {start_year}"
             chart_type = "bar"
-            
+
         else: # "value"
             qs = StatistiqueRegionale.objects.filter(annee=start_year)
             if regions:
@@ -124,10 +124,11 @@ def generer_donnees(intent: QueryIntent) -> dict:
                 data.append({
                     "region": item.region,
                     "annee": item.annee,
-                    "value": getattr(item, indicator)
+                    "value": getattr(item, safe_indicator)
                 })
             regs = ", ".join(regions) if regions else "le Sénégal"
             title = f"{ind_label} : {regs} ({start_year})"
+            chart_type = "bar"  # Une barre unique reste lisible
             
         return {
             "title": title,

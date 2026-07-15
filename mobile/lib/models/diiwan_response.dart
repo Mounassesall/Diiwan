@@ -43,12 +43,29 @@ class ChartData {
   ChartData({required this.type, required this.labels, required this.datasets});
 
   factory ChartData.fromJson(Map<String, dynamic> json) {
+    if (json['labels'] != null && json['datasets'] != null) {
+      return ChartData(
+        type: json['type'] as String,
+        labels: List<String>.from(json['labels'] as List),
+        datasets: (json['datasets'] as List<dynamic>)
+            .map((e) => ChartDataset.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+    }
+
+    final rawData = json['data'] as List<dynamic>? ?? [];
+    final labels = rawData.map((row) {
+      final map = row as Map<String, dynamic>;
+      return (map['region'] ?? map['annee']).toString();
+    }).toList();
+    final values = rawData
+        .map((row) => ((row as Map<String, dynamic>)['value'] as num).toDouble())
+        .toList();
+
     return ChartData(
-      type: json['type'] as String,
-      labels: List<String>.from(json['labels'] as List),
-      datasets: (json['datasets'] as List<dynamic>)
-          .map((e) => ChartDataset.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      type: json['type'] as String? ?? 'bar',
+      labels: labels,
+      datasets: [ChartDataset(label: 'Valeur', data: values)],
     );
   }
 }
@@ -75,8 +92,8 @@ class Metadata {
 
   factory Metadata.fromJson(Map<String, dynamic> json) {
     return Metadata(
-      fictitious: json['fictitious'] as bool,
-      rowsUsed: json['rows_used'] as int,
+      fictitious: json['fictitious'] as bool? ?? true,
+      rowsUsed: (json['rows_used'] as num?)?.toInt() ?? 0,
     );
   }
 }

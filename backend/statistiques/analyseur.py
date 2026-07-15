@@ -68,9 +68,43 @@ def analyser_question(question: str) -> QueryIntent:
             break
             
     # 2. Détection des régions
+    # 2.1. Recherche exacte d'abord (y compris les espaces comme Saint-Louis)
     for reg in REGIONS_SENEGAL:
-        if re.search(r'\b' + re.escape(normaliser_texte(reg)) + r'\b', q_norm):
-            intent.regions.append(reg)
+        reg_norm = normaliser_texte(reg)
+        if re.search(r'\b' + re.escape(reg_norm) + r'\b', q_norm) or re.search(r'\b' + re.escape(reg_norm.replace('-', ' ')) + r'\b', q_norm):
+            if reg not in intent.regions:
+                intent.regions.append(reg)
+
+    # 2.2. Recherche approximative mot par mot si aucune région trouvée
+    if not intent.regions:
+        import difflib
+        mots = re.findall(r'\b\w{3,}\b', q_norm) # Mots de 3 lettres ou plus
+        aliases = {
+            "dackar": "Dakar", "dakare": "Dakar",
+            "djourbel": "Diourbel", "diourbele": "Diourbel",
+            "fatique": "Fatick", "fatike": "Fatick",
+            "kafrine": "Kaffrine",
+            "kaolac": "Kaolack",
+            "kedugu": "Kédougou",
+            "st louis": "Saint-Louis", "saint louis": "Saint-Louis", "ndar": "Saint-Louis",
+            "sejiou": "Sédhiou",
+            "tamba": "Tambacounda",
+            "ties": "Thiès",
+            "ziguinshor": "Ziguinchor", "zig": "Ziguinchor"
+        }
+        for mot in mots:
+            if mot in aliases:
+                reg = aliases[mot]
+                if reg not in intent.regions:
+                    intent.regions.append(reg)
+                continue
+            close_matches = difflib.get_close_matches(mot, [r.lower() for r in REGIONS_SENEGAL], n=1, cutoff=0.75)
+            if close_matches:
+                matched_lower = close_matches[0]
+                for reg in REGIONS_SENEGAL:
+                    if reg.lower() == matched_lower:
+                        if reg not in intent.regions:
+                            intent.regions.append(reg)
             
     # 3. Extraction des années
     annees = [int(a) for a in re.findall(r'\b(202[0-4])\b', q_norm)]

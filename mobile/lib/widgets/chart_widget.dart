@@ -58,11 +58,11 @@ class DiiwanChart extends StatelessWidget {
             spots: spots,
             isCurved: true,
             barWidth: 3,
-            color: Colors.deepPurple,
+            color: const Color(0xFF10B981),
             dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
-              color: Colors.deepPurple.withOpacity(0.1),
+              color: const Color(0xFF10B981).withOpacity(0.1),
             ),
           ),
         ],
@@ -78,7 +78,7 @@ class DiiwanChart extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       chartData.labels[index],
-                      style: const TextStyle(fontSize: 10),
+                      style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
                     ),
                   );
                 }
@@ -92,8 +92,8 @@ class DiiwanChart extends StatelessWidget {
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
-        gridData: const FlGridData(show: true),
-        borderData: FlBorderData(show: true),
+        gridData: const FlGridData(show: true, drawVerticalLine: false),
+        borderData: FlBorderData(show: true, border: const Border(bottom: BorderSide(color: Color(0xFF334155)), left: BorderSide(color: Color(0xFF334155)))),
       ),
     );
   }
@@ -110,7 +110,7 @@ class DiiwanChart extends StatelessWidget {
           barRods: [
             BarChartRodData(
               toY: data[i],
-              color: Colors.deepPurple,
+              color: const Color(0xFF10B981),
               width: 16,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(4),
@@ -138,7 +138,7 @@ class DiiwanChart extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       chartData.labels[index],
-                      style: const TextStyle(fontSize: 10),
+                      style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
                     ),
                   );
                 }
@@ -152,8 +152,8 @@ class DiiwanChart extends StatelessWidget {
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
-        gridData: const FlGridData(show: true),
-        borderData: FlBorderData(show: true),
+        gridData: const FlGridData(show: true, drawVerticalLine: false),
+        borderData: FlBorderData(show: true, border: const Border(bottom: BorderSide(color: Color(0xFF334155)), left: BorderSide(color: Color(0xFF334155)))),
       ),
     );
   }

@@ -18,57 +18,48 @@ const REGIONS = [
 
 const INDICATORS = {
   taux_chomage_pct: {
-    label: "Taux de chômage (%)",
-    aliases: ['chomage', 'chomeur', 'chomeurs', 'sans emploi', 'travail'],
-    unit: '%',
-    format: val => `${val.toFixed(1)}%`
+    label: "taux de chômage", chartLabel: "Taux de chômage", article: "le", participe: "estimé", preposition: "du",
+    aliases: ['chomage', 'chomeur', 'chomeurs', 'sans emploi', 'travail'], unit: '%',
+    format: val => `${val.toFixed(1)} %`
   },
   acces_internet_pct: {
-    label: "Accès à Internet (%)",
-    aliases: ['internet', 'connexion', 'web', 'connectivite', 'en ligne'],
-    unit: '%',
-    format: val => `${val.toFixed(1)}%`
+    label: "accès à Internet", chartLabel: "Accès à Internet", article: "l'", participe: "estimé", preposition: "de l'",
+    aliases: ['internet', 'connexion', 'web', 'connectivite', 'en ligne'], unit: '%',
+    format: val => `${val.toFixed(1)} %`
   },
   population: {
-    label: "Population (hab.)",
-    aliases: ['population', 'habitants', 'habitant', 'peuple', 'personnes', 'demographie'],
-    unit: ' hab.',
-    format: val => new Intl.NumberFormat('fr-FR').format(val) + ' hab.'
+    label: "population", chartLabel: "Population", article: "la", participe: "estimée", preposition: "de la",
+    aliases: ['population', 'habitants', 'habitant', 'peuple', 'personnes', 'demographie'], unit: ' hab.',
+    format: val => new Intl.NumberFormat('fr-FR').format(val) + ' habitants'
   },
   taux_pauvrete_pct: {
-    label: "Taux de pauvreté (%)",
-    aliases: ['pauvrete', 'pauvre', 'pauvres', 'seuil de pauvrete'],
-    unit: '%',
-    format: val => `${val.toFixed(1)}%`
+    label: "taux de pauvreté", chartLabel: "Taux de pauvreté", article: "le", participe: "estimé", preposition: "du",
+    aliases: ['pauvrete', 'pauvre', 'pauvres', 'seuil de pauvrete'], unit: '%',
+    format: val => `${val.toFixed(1)} %`
   },
   taux_alphabetisation_pct: {
-    label: "Taux d'alphabétisation (%)",
-    aliases: ['alphabetisation', 'alphabetise', 'lire', 'ecrire', 'instruction'],
-    unit: '%',
-    format: val => `${val.toFixed(1)}%`
+    label: "taux d'alphabétisation", chartLabel: "Taux d'alphabétisation", article: "le", participe: "estimé", preposition: "du",
+    aliases: ['alphabetisation', 'alphabetise', 'lire', 'ecrire', 'instruction'], unit: '%',
+    format: val => `${val.toFixed(1)} %`
   },
   taux_urbanisation_pct: {
-    label: "Taux d'urbanisation (%)",
-    aliases: ['urbanisation', 'urbain', 'ville', 'villes', 'citadin'],
-    unit: '%',
-    format: val => `${val.toFixed(1)}%`
+    label: "taux d'urbanisation", chartLabel: "Taux d'urbanisation", article: "le", participe: "estimé", preposition: "du",
+    aliases: ['urbanisation', 'urbain', 'ville', 'villes', 'citadin'], unit: '%',
+    format: val => `${val.toFixed(1)} %`
   },
   taux_scolarisation_pct: {
-    label: "Taux de scolarisation (%)",
-    aliases: ['scolarisation', 'ecole', 'ecoles', 'scolarise', 'eleves', 'classe'],
-    unit: '%',
-    format: val => `${val.toFixed(1)}%`
+    label: "taux de scolarisation", chartLabel: "Taux de scolarisation", article: "le", participe: "estimé", preposition: "du",
+    aliases: ['scolarisation', 'ecole', 'ecoles', 'scolarise', 'eleves', 'classe'], unit: '%',
+    format: val => `${val.toFixed(1)} %`
   },
   centres_sante: {
-    label: "Nombre de centres de santé",
-    aliases: ['sante', 'hopitaux', 'hopital', 'dispensaire', 'clinique', 'centres de sante'],
-    unit: '',
+    label: "nombre de centres de santé", chartLabel: "Centres de santé", article: "le", participe: "estimé", preposition: "du",
+    aliases: ['sante', 'hopitaux', 'hopital', 'dispensaire', 'clinique', 'centres de sante'], unit: '',
     format: val => `${val}`
   },
  production_cerealiere_tonnes: {
-    label: "Production céréalière (tonnes)",
-    aliases: ['cereales', 'cereale', 'production', 'agriculture', 'recolte', 'tonnes'],
-    unit: ' tonnes',
+    label: "production céréalière", chartLabel: "Production céréalière", article: "la", participe: "estimée", preposition: "de la",
+    aliases: ['cereales', 'cereale', 'production', 'agriculture', 'recolte', 'tonnes'], unit: ' tonnes',
     format: val => new Intl.NumberFormat('fr-FR').format(val) + ' tonnes'
   }
 };
@@ -186,7 +177,7 @@ export function queryMockData(question) {
 
     const val = record[matchedIndicatorKey];
     const formattedVal = indicatorMeta.format(val);
-    const answer = `En ${startYear}, le/la **${indicatorMeta.label.toLowerCase()}** dans la région de **${region}** est estimé(e) à **${formattedVal}**.`;
+    const answer = `En ${startYear}, ${indicatorMeta.article} ${indicatorMeta.label} de la région de ${region} est ${indicatorMeta.participe} à ${formattedVal}.`;
 
     return {
       answer,
@@ -210,14 +201,14 @@ export function queryMockData(question) {
 
     const table = records.map(r => ({ region: r.region, valeur: r[matchedIndicatorKey] }));
     const answersList = records.map(r => `${r.region} (${indicatorMeta.format(r[matchedIndicatorKey])})`);
-    const answer = `Comparaison pour le/la **${indicatorMeta.label.toLowerCase()}** en **${year}** :\n` + 
+    const answer = `Comparaison pour ${indicatorMeta.article} ${indicatorMeta.label} en ${year} :\n` + 
       answersList.map((item, idx) => `${idx + 1}. ${item}`).join('\n');
 
     const chart = {
       type: 'bar',
       labels: table.map(t => t.region),
       datasets: [{
-        label: `${indicatorMeta.label} (${year})`,
+        label: `${indicatorMeta.chartLabel} (${year})`,
         data: table.map(t => t.valeur),
         backgroundColor: 'rgba(16, 185, 129, 0.6)', // Emerald color
         borderColor: 'rgb(16, 185, 129)',
@@ -260,14 +251,16 @@ export function queryMockData(question) {
     const table = records.map(r => ({ annee: r.annee, valeur: r[matchedIndicatorKey] }));
     const firstVal = indicatorMeta.format(table[0].valeur);
     const lastVal = indicatorMeta.format(table[table.length - 1].valeur);
-    const answer = `Évolution du/de la **${indicatorMeta.label.toLowerCase()}** pour la région de **${region}** entre **${startYear}** et **${endYear}** :\n` +
-      `Elle est passée de **${firstVal}** en ${startYear} à **${lastVal}** en ${endYear}.`;
+    const articleCap = indicatorMeta.article.endsWith("'") ? indicatorMeta.article.charAt(0).toUpperCase() + indicatorMeta.article.slice(1) : indicatorMeta.article.charAt(0).toUpperCase() + indicatorMeta.article.slice(1);
+    const passe = indicatorMeta.participe === "estimé" ? "passé" : "passée";
+    const answer = `Évolution ${indicatorMeta.preposition} ${indicatorMeta.label} pour la région de ${region} entre ${startYear} et ${endYear} :\n` +
+      `${articleCap} ${indicatorMeta.label} est ${passe} de ${firstVal} en ${startYear} à ${lastVal} en ${endYear}.`;
 
     const chart = {
       type: 'line',
       labels: table.map(t => t.annee),
       datasets: [{
-        label: `${indicatorMeta.label} - ${region}`,
+        label: indicatorMeta.chartLabel,
         data: table.map(t => t.valeur),
         fill: false,
         borderColor: 'rgb(16, 185, 129)',
@@ -315,14 +308,14 @@ export function queryMockData(question) {
     const table = sliced.map(r => ({ region: r.region, valeur: r[matchedIndicatorKey] }));
 
     const textDirection = isAscending ? "les moins" : "les plus";
-    const answer = `Classement des **${limit} régions** ${textDirection} performantes pour le/la **${indicatorMeta.label.toLowerCase()}** en **${year}** :\n` +
-      sliced.map((r, i) => `${i + 1}. **${r.region}** : ${indicatorMeta.format(r[matchedIndicatorKey])}`).join('\n');
+    const answer = `Classement des ${limit} régions pour ${indicatorMeta.article} ${indicatorMeta.label} en ${year} :\n` +
+      sliced.map((r, i) => `${i + 1}. ${r.region} (${indicatorMeta.format(r[matchedIndicatorKey])})`).join('\n');
 
     const chart = {
       type: 'bar',
       labels: table.map(t => t.region),
       datasets: [{
-        label: `${indicatorMeta.label} (${year})`,
+        label: `${indicatorMeta.chartLabel} (${year})`,
         data: table.map(t => t.valeur),
         backgroundColor: isAscending ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.6)',
         borderColor: isAscending ? 'rgb(239, 68, 68)' : 'rgb(16, 185, 129)',
@@ -363,11 +356,11 @@ export function queryMockData(question) {
     }
 
     const formattedAggr = indicatorMeta.format(aggregatedValue);
-    const answer = `La **${labelText}** estimée du/de la **${indicatorMeta.label.toLowerCase()}** pour l'ensemble du Sénégal en **${year}** est de **${formattedAggr}** (basé sur les 14 régions).`;
+    const answer = `La ${labelText} estimée ${indicatorMeta.preposition} ${indicatorMeta.label} pour l'ensemble du Sénégal en ${year} est de ${formattedAggr} (basé sur les 14 régions).`;
 
     return {
       answer,
-      table: [{ indicateur: indicatorMeta.label, valeur: aggregatedValue }],
+      table: [{ indicateur: indicatorMeta.chartLabel, valeur: aggregatedValue }],
       chart: null,
       metadata: { fictitious: true, rows_used: yearRecords.length, indicator: matchedIndicatorKey, year, operation }
     };

@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
-import '../providers/chat_provider.dart';
-import 'chat_screen.dart';
+import '../screens/chat_screen.dart';
+import '../theme.dart';
 
 /// Écran de carte choroplèthe du Sénégal.
 ///
@@ -31,6 +30,8 @@ class _MapScreenState extends State<MapScreen> {
   String? _errorMessage;
   String _selectedIndicator = 'population';
   int _selectedYear = 2024;
+  final ValueNotifier<double> _zoomNotifier = ValueNotifier<double>(6.5);
+  final MapController _mapController = MapController();
 
   /// Liste blanche des indicateurs (identique à celle du backend)
   static const List<String> _indicators = [
@@ -47,6 +48,18 @@ class _MapScreenState extends State<MapScreen> {
 
   /// Labels lisibles pour le dropdown
   static const Map<String, String> _indicatorLabels = {
+    'population': 'la population',
+    'taux_urbanisation_pct': "le taux d'urbanisation",
+    'taux_alphabetisation_pct': "le taux d'alphabétisation",
+    'taux_chomage_pct': 'le taux de chômage',
+    'taux_pauvrete_pct': 'le taux de pauvreté',
+    'acces_internet_pct': "l'accès à Internet",
+    'centres_sante': 'le nombre de centres de santé',
+    'taux_scolarisation_pct': 'le taux de scolarisation',
+    'production_cerealiere_tonnes': 'la production céréalière',
+  };
+
+  static const Map<String, String> _indicatorDropdownLabels = {
     'population': 'Population',
     'taux_urbanisation_pct': 'Urbanisation (%)',
     'taux_alphabetisation_pct': 'Alphabétisation (%)',
@@ -101,35 +114,100 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  /// Palette de couleur : du jaune clair (valeurs basses) au vert foncé (valeurs hautes).
+  /// Indique si un indicateur est "négatif" (rouge) ou "positif" (vert)
+  bool _isNegativeIndicator(String indicator) {
+    return indicator == 'taux_chomage_pct' || indicator == 'taux_pauvrete_pct';
+  }
+
+  /// Palette de couleur identique au web : rouge si négatif, émeraude sinon.
   Color _valueToColor(double value, double minVal, double maxVal) {
-    if (maxVal == minVal) return Colors.green.shade400;
-    final ratio = ((value - minVal) / (maxVal - minVal)).clamp(0.0, 1.0);
-    // Interpolation linéaire HSL : jaune (60°) → vert (120°)
-    final hue = 60.0 + ratio * 60.0;
-    final lightness = 0.75 - ratio * 0.35; // de clair à foncé
-    return HSLColor.fromAHSL(1.0, hue, 0.7, lightness).toColor();
+    if (maxVal == minVal) return const Color(0xFF10B981); // Emerald par défaut
+    
+    final pct = ((value - minVal) / (maxVal - minVal)).clamp(0.0, 1.0);
+    // Lightness varie de 0.8 (clair) à 0.3 (foncé)
+    final lightness = 0.80 - (pct * 0.50);
+    
+    if (_isNegativeIndicator(_selectedIndicator)) {
+      // Rouge (Hue = 0)
+      return HSLColor.fromAHSL(1.0, 0.0, 0.75, lightness).toColor();
+    } else {
+      // Emeraude (Hue = 142)
+      return HSLColor.fromAHSL(1.0, 142.0, 0.70, lightness).toColor();
+    }
   }
 
   void _onRegionTap(RegionFeature feature) {
-    final question =
-        'Quelle est la $_selectedIndicator de ${feature.region} en $_selectedYear ?';
-    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-    chatProvider.sendQuestion(question);
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const DiiwanChatScreen()),
+    final indicatorText = _indicatorLabels[_selectedIndicator] ?? _selectedIndicator;
+    final unit = _selectedIndicator.contains('pct') ? '%' : (_selectedIndicator == 'population' ? 'hab.' : '');
+    final formattedValue = feature.indicatorValue % 1 == 0 
+        ? feature.indicatorValue.toInt().toString() 
+        : feature.indicatorValue.toStringAsFixed(1);
+
+    // Au lieu de naviguer immédiatement, on affiche un BottomSheet interactif (comme le tooltip web)
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                feature.region,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${_indicatorDropdownLabels[_selectedIndicator]} : $formattedValue $unit',
+                style: const TextStyle(fontSize: 16, color: Color(0xFF10B981), fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text('Demander à l\'IA', style: TextStyle(fontSize: 16)),
+                  onPressed: () {
+                    Navigator.pop(context); // Fermer le bottom sheet
+                    final question = 'Quelle est $indicatorText de ${feature.region} en $_selectedYear ?';
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DiiwanChatScreen(prefilledQuestion: question),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   // --- Algorithme de ray-casting pour détecter si un point est dans un polygone ---
-  bool _pointInPolygon(LatLng point, List<LatLng> polygon) {
-    int intersectCount = 0;
-    for (int j = 0; j < polygon.length; j++) {
-      final a = polygon[j];
-      final b = polygon[(j + 1) % polygon.length];
-      if (_rayIntersectsSegment(point, a, b)) intersectCount++;
+  bool _pointInPolygon(LatLng point, List<List<LatLng>> polygons) {
+    for (final poly in polygons) {
+      int intersectCount = 0;
+      for (int j = 0; j < poly.length; j++) {
+        final a = poly[j];
+        final b = poly[(j + 1) % poly.length];
+        if (_rayIntersectsSegment(point, a, b)) intersectCount++;
+      }
+      if ((intersectCount % 2) == 1) return true;
     }
-    return (intersectCount % 2) == 1;
+    return false;
   }
 
   bool _rayIntersectsSegment(LatLng p, LatLng a, LatLng b) {
@@ -169,30 +247,47 @@ class _MapScreenState extends State<MapScreen> {
       minVal = 0;
       maxVal = 100;
     }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Carte des régions')),
+      backgroundColor: DiiwanTheme.background(isDark),
+      appBar: AppBar(
+        title: Text('Carte des régions', style: TextStyle(color: DiiwanTheme.textPrimary(isDark))),
+      ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: DiiwanTheme.primary))
           : _errorMessage != null
               ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
               : Column(
                   children: [
                     // ---- Sélecteur d'indicateur ----
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedIndicator,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Indicateur',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: DiiwanTheme.surface(isDark),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: DiiwanTheme.border(isDark)),
                         ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedIndicator,
+                          isExpanded: true,
+                          dropdownColor: DiiwanTheme.surface(isDark),
+                          style: TextStyle(color: DiiwanTheme.textPrimary(isDark), fontSize: 16),
+                          decoration: InputDecoration(
+                            labelText: 'Indicateur',
+                            labelStyle: TextStyle(color: DiiwanTheme.textSecondary(isDark)),
+                            filled: false,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         items: _indicators
                             .map((ind) => DropdownMenuItem(
                                   value: ind,
-                                  child: Text(_indicatorLabels[ind] ?? ind),
+                                  child: Text(_indicatorDropdownLabels[ind] ?? ind),
                                 ))
                             .toList(),
                         onChanged: (val) {
@@ -206,17 +301,19 @@ class _MapScreenState extends State<MapScreen> {
                         },
                       ),
                     ),
+                  ),
 
-                    // ---- Légende (gradient) ----
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  // ---- Légende (gradient) ----
+                    Container(
+                      color: const Color(0xFF1E293B),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       child: Row(
                         children: [
-                          Text(minVal.toStringAsFixed(0), style: const TextStyle(fontSize: 11)),
-                          const SizedBox(width: 4),
+                          Text(minVal.toStringAsFixed(0), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Container(
-                              height: 10,
+                              height: 8,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(4),
                                 gradient: LinearGradient(
@@ -228,8 +325,8 @@ class _MapScreenState extends State<MapScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Text(maxVal.toStringAsFixed(0), style: const TextStyle(fontSize: 11)),
+                          const SizedBox(width: 8),
+                          Text(maxVal.toStringAsFixed(0), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                         ],
                       ),
                     ),
@@ -237,9 +334,18 @@ class _MapScreenState extends State<MapScreen> {
                     // ---- Carte ----
                     Expanded(
                       child: FlutterMap(
+                        mapController: _mapController,
                         options: MapOptions(
                           initialCenter: const LatLng(14.5, -14.5), // centre du Sénégal
                           initialZoom: 6.5,
+                          interactionOptions: const InteractionOptions(
+                            flags: InteractiveFlag.all,
+                          ),
+                          onPositionChanged: (position, hasGesture) {
+                            if (position.zoom != null) {
+                              _zoomNotifier.value = position.zoom!;
+                            }
+                          },
                           onTap: (tapPos, point) {
                             // Chercher quel polygone contient le point tapé
                             for (final f in _features) {
@@ -252,19 +358,85 @@ class _MapScreenState extends State<MapScreen> {
                         ),
                         children: [
                           TileLayer(
-                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
+                            subdomains: const ['a', 'b', 'c', 'd'],
                             userAgentPackageName: 'com.diiwan.mobile',
                           ),
                           PolygonLayer(
-                            polygons: _features.map((f) {
+                            polygons: _features.expand((f) {
                               final color = _valueToColor(f.indicatorValue, minVal, maxVal);
-                              return Polygon(
-                                points: f.geometry,
-                                color: color.withOpacity(0.6),
-                                borderStrokeWidth: 2,
-                                borderColor: Colors.black54,
-                              );
+                              return f.geometry.map((ring) => Polygon(
+                                points: ring,
+                                color: color.withOpacity(0.7),
+                                isFilled: true,
+                                borderStrokeWidth: 1.5,
+                                borderColor: const Color(0xFF0F172A), // Bordure comme le fond web
+                              ));
                             }).toList(),
+                          ),
+                          ValueListenableBuilder<double>(
+                            valueListenable: _zoomNotifier,
+                            builder: (context, currentZoom, child) {
+                              return MarkerLayer(
+                                markers: const {
+                                  'Dakar': LatLng(14.7167, -17.4677),
+                                  'Thiès': LatLng(14.7929, -16.9250),
+                                  'Diourbel': LatLng(14.6533, -16.2300),
+                                  'Fatick': LatLng(14.3353, -16.4069),
+                                  'Kaolack': LatLng(14.1500, -16.0667),
+                                  'Kaffrine': LatLng(14.1059, -15.5508),
+                                  'Louga': LatLng(15.6174, -16.2238),
+                                  'Saint-Louis': LatLng(16.0326, -16.4818),
+                                  'Matam': LatLng(15.6559, -13.2555),
+                                  'Tambacounda': LatLng(13.7689, -13.6673),
+                                  'Kédougou': LatLng(12.5539, -12.1793),
+                                  'Kolda': LatLng(12.8833, -14.9500),
+                                  'Sédhiou': LatLng(12.7081, -15.5569),
+                                  'Ziguinchor': LatLng(12.5833, -16.2719),
+                                }.entries.where((entry) {
+                                  final isSmall = ['Sédhiou', 'Kaffrine', 'Diourbel', 'Dakar', 'Fatick', 'Thiès', 'Kaolack'].contains(entry.key);
+                                  return !isSmall || currentZoom >= 6.5;
+                                }).map((entry) {
+                                  final isSmall = ['Sédhiou', 'Kaffrine', 'Diourbel', 'Dakar', 'Fatick', 'Thiès', 'Kaolack'].contains(entry.key);
+                                  
+                                  double fontSize = 11.0;
+                                  if (isSmall) {
+                                    fontSize = currentZoom >= 7.0 ? 9.0 : 8.0;
+                                  } else if (['Louga', 'Saint-Louis', 'Kolda', 'Ziguinchor'].contains(entry.key)) {
+                                    fontSize = 10.0;
+                                  }
+
+                                  return Marker(
+                                    point: entry.value,
+                                    width: 80,
+                                    height: 30,
+                                    alignment: Alignment.center,
+                                    child: IgnorePointer(
+                                      child: Center(
+                                        child: Text(
+                                          entry.key.toUpperCase(),
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: fontSize,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white.withOpacity(0.95),
+                                            shadows: const [
+                                              Shadow(offset: Offset(-1, -1), color: Color(0xFF0F172A)),
+                                              Shadow(offset: Offset(1, -1), color: Color(0xFF0F172A)),
+                                              Shadow(offset: Offset(-1, 1), color: Color(0xFF0F172A)),
+                                              Shadow(offset: Offset(1, 1), color: Color(0xFF0F172A)),
+                                              Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black87),
+                                            ],
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -281,7 +453,7 @@ class _MapScreenState extends State<MapScreen> {
 
 class RegionFeature {
   final String region;
-  final List<LatLng> geometry;
+  final List<List<LatLng>> geometry;
   final double indicatorValue;
 
   RegionFeature({
@@ -291,21 +463,6 @@ class RegionFeature {
   });
 
   /// Parse une feature GeoJSON.
-  ///
-  /// Le JSON attendu de l'API :
-  /// ```json
-  /// {
-  ///   "type": "Feature",
-  ///   "properties": {
-  ///     "region": "Dakar",
-  ///     "taux_chomage_pct": 12.5    // la valeur de l'indicateur demandé
-  ///   },
-  ///   "geometry": {
-  ///     "type": "Polygon",
-  ///     "coordinates": [[[lon, lat], ...]]
-  ///   }
-  /// }
-  /// ```
   factory RegionFeature.fromJson(Map<String, dynamic> json) {
     final props = json['properties'] as Map<String, dynamic>;
     final regionName = props['region'] as String? ?? 'Inconnu';
@@ -324,25 +481,26 @@ class RegionFeature {
     final type = geom['type'] as String;
     final coords = geom['coordinates'] as List<dynamic>;
 
-    List<LatLng> points;
-    if (type == 'MultiPolygon') {
-      // Prendre le premier polygone du MultiPolygon
-      final firstPolygon = coords[0] as List<dynamic>;
-      final ring = firstPolygon[0] as List<dynamic>;
-      points = ring
-          .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
-          .toList();
-    } else {
-      // Polygon simple
+    List<List<LatLng>> geometryList = [];
+    if (type == 'Polygon') {
       final ring = coords[0] as List<dynamic>;
-      points = ring
+      final points = ring
           .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
           .toList();
+      geometryList.add(points);
+    } else if (type == 'MultiPolygon') {
+      for (final polygon in coords) {
+        final ring = polygon[0] as List<dynamic>;
+        final points = ring
+            .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
+            .toList();
+        geometryList.add(points);
+      }
     }
 
     return RegionFeature(
       region: regionName,
-      geometry: points,
+      geometry: geometryList,
       indicatorValue: indicatorValue,
     );
   }

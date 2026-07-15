@@ -38,7 +38,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
   const [messages, setMessages] = useState([
     {
       sender: 'agent',
-      text: "Bonjour Ngoné ! Je suis Diiwan, votre assistant statistique pour les régions du Sénégal. Posez-moi une question sur le chômage, la population, l'accès internet, ou d'autres indicateurs entre 2020 et 2024.",
+      text: "Bonjour ! Je suis Diiwan, votre assistant statistique pour les régions du Sénégal. Posez-moi une question sur le chômage, la population, l'accès internet, ou d'autres indicateurs entre 2020 et 2024.",
       response: null
     }
   ]);
@@ -95,7 +95,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
       }
 
       try {
-        const response = await fetch('/api/question/', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/question/`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ question: userText })
@@ -165,7 +165,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
                 {/* HTML Table rendering if table is not empty */}
                 {hasTable && (
                   <div style={{ marginTop: '12px', overflowX: 'auto', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left' }}>
                       <thead>
                         <tr style={{ background: 'rgba(255, 255, 255, 0.05)', borderBottom: '1px solid var(--border-color)' }}>
                           {Object.keys(msg.response.table[0]).map((head, hIdx) => (
@@ -202,7 +202,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
               {/* Fictitious banner warning */}
               {!isUser && isFictitious && (
                 <div style={{
-                  fontSize: '10px',
+                  fontSize: '12px',
                   color: '#fbbf24',
                   display: 'flex',
                   alignSelf: 'flex-start',
@@ -225,7 +225,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
         {loading && (
           <div className="pulse-glow slide-up" style={{ alignSelf: 'flex-start', display: 'flex', gap: '8px', alignItems: 'center', background: 'rgba(30, 41, 59, 0.4)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
             <Loader2 size={16} className="animate-spin" style={{ color: '#10b981' }} />
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Diiwan réfléchit...</span>
+            <span style={{ fontSize: '15px', color: 'var(--text-secondary)' }}>Diiwan réfléchit...</span>
           </div>
         )}
 
@@ -237,7 +237,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
             color: '#fca5a5',
             padding: '12px 16px',
             borderRadius: '8px',
-            fontSize: '13px',
+            fontSize: '15px',
             display: 'flex',
             alignItems: 'start',
             gap: '8px',

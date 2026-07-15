@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { senegalGeoJSON, statisticsData } from './mockData';
 
 // Map of indicator keys to labels & config
@@ -21,6 +22,7 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
   const [minVal, setMinVal] = useState(0);
   const [maxVal, setMaxVal] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(7.2);
 
   // Fetch or compute data map
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
     } else {
       // Live Mode: fetch from Django API /api/regions/geojson/
       setLoading(true);
-      fetch(`/api/regions-geojson/?indicator=${indicator}&annee=${year}`)
+      fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/regions-geojson/?indicator=${indicator}&annee=${year}`)
         .then(res => {
           if (!res.ok) throw new Error('API failed');
           return res.json();
@@ -195,12 +197,15 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
           zoom={7.2} 
           style={{ height: '100%', width: '100%' }}
           zoomControl={true}
-          scrollWheelZoom={false}
-          doubleClickZoom={false}
+          scrollWheelZoom={true}
+          doubleClickZoom={true}
+          dragging={true}
+          tap={false}
         >
+          <MapEvents setZoom={setCurrentZoom} />
           <TileLayer
             attribution='&copy; OpenStreetMap'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
           />
           <GeoJSON
             key={`${indicator}-${year}-${JSON.stringify(statsMap)}`}
@@ -208,6 +213,51 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
             style={styleFeature}
             onEachFeature={onEachFeature}
           />
+
+          {/* Permanent Region Labels */}
+          {Object.entries({
+            'Dakar': [14.7167, -17.4677],
+            'Thiès': [14.7929, -16.9250],
+            'Diourbel': [14.6533, -16.2300],
+            'Fatick': [14.3353, -16.4069],
+            'Kaolack': [14.1500, -16.0667],
+            'Kaffrine': [14.1059, -15.5508],
+            'Louga': [15.6174, -16.2238],
+            'Saint-Louis': [16.0326, -16.4818],
+            'Matam': [15.6559, -13.2555],
+            'Tambacounda': [13.7689, -13.6673],
+            'Kédougou': [12.5539, -12.1793],
+            'Kolda': [12.8833, -14.9500],
+            'Sédhiou': [12.7081, -15.5569],
+            'Ziguinchor': [12.5833, -16.2719]
+          }).map(([name, coords]) => {
+            const isSmall = ['Sédhiou', 'Kaffrine', 'Diourbel', 'Dakar', 'Fatick', 'Thiès', 'Kaolack'].includes(name);
+            const showLabel = !isSmall || currentZoom >= 7;
+            if (!showLabel) return null;
+
+            let fontSize = '12px';
+            if (isSmall) {
+              fontSize = currentZoom >= 7.5 ? '10px' : '9px';
+            } else if (['Louga', 'Saint-Louis', 'Kolda', 'Ziguinchor'].includes(name)) {
+              fontSize = '11px';
+            }
+
+            return (
+              <Marker 
+                key={name} 
+                position={coords} 
+                interactive={false}
+                icon={
+                  L.divIcon({
+                    className: 'region-label-container',
+                    html: `<div class="region-label" style="font-size: ${fontSize};">${name.toUpperCase()}</div>`,
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                  })
+                }
+              />
+            );
+          })}
         </MapContainer>
       </div>
 
@@ -247,4 +297,13 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
       </div>
     </div>
   );
+}
+
+function MapEvents({ setZoom }) {
+  const map = useMapEvents({
+    zoomend: () => {
+      setZoom(map.getZoom());
+    },
+  });
+  return null;
 }
