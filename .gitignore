@@ -1,0 +1,48 @@
+# === Secrets — jamais commités ===
+.env
+.env.*
+*.env
+**/GEMINI_API_KEY*
+**/secrets.json
+
+# === Backend Django ===
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/migrations/__pycache__/
+backend/*.sqlite3
+backend/db.sqlite3
+backend/staticfiles/
+backend/media/
+*.pyc
+
+# === Frontend Web React ===
+web/node_modules/
+web/dist/
+web/build/
+web/.vite/
+web/*.local
+
+# === Mobile Flutter ===
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/.pub-cache/
+mobile/.pub/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/*.iml
+
+# === Éditeurs / OS ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# === Antigravity / Cursor ===
+.cursor/
+.antigravity/
