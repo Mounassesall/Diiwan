@@ -141,7 +141,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
           const isFictitious = msg.response?.metadata?.fictitious;
 
           return (
-            <div key={index} style={{
+            <div key={index} className="slide-up" style={{
               alignSelf: isUser ? 'flex-end' : 'flex-start',
               maxWidth: '85%',
               display: 'flex',
@@ -150,14 +150,15 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
             }}>
               {/* Message Bubble */}
               <div className="glass-card" style={{
-                padding: '12px 16px',
+                padding: '16px 20px',
                 borderRadius: isUser ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
-                backgroundColor: isUser ? 'rgba(16, 185, 129, 0.25)' : 'rgba(30, 41, 59, 0.65)',
+                backgroundColor: isUser ? 'rgba(16, 185, 129, 0.25)' : 'var(--glass-card-bg)',
                 border: isUser ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--border-color)',
-                fontSize: '14px',
+                fontSize: '15px',
                 lineHeight: '1.6',
                 color: 'var(--text-primary)',
-                wordBreak: 'break-word'
+                wordBreak: 'break-word',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
               }}>
                 <div>{formatMessageText(msg.text)}</div>
 
@@ -222,7 +223,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
 
         {/* Loading Spinner Indicator */}
         {loading && (
-          <div style={{ alignSelf: 'flex-start', display: 'flex', gap: '8px', alignItems: 'center', background: 'rgba(30, 41, 59, 0.4)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+          <div className="pulse-glow slide-up" style={{ alignSelf: 'flex-start', display: 'flex', gap: '8px', alignItems: 'center', background: 'rgba(30, 41, 59, 0.4)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
             <Loader2 size={16} className="animate-spin" style={{ color: '#10b981' }} />
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Diiwan réfléchit...</span>
           </div>
@@ -269,10 +270,10 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
             background: 'var(--input-bg)',
             border: '1px solid var(--border-color)',
             borderRadius: '24px',
-            padding: '12px 18px',
+            padding: '14px 20px',
             color: 'var(--text-primary)',
             outline: 'none',
-            fontSize: '14px',
+            fontSize: '15px',
             transition: 'border-color 0.2s',
           }}
           onFocus={(e) => e.target.style.borderColor = 'rgba(16, 185, 129, 0.6)'}
@@ -284,8 +285,8 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
           style={{
             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
             border: 'none',
-            width: '42px',
-            height: '42px',
+            width: '48px',
+            height: '48px',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',

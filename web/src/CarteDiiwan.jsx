@@ -30,7 +30,7 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
     } else {
       // Live Mode: fetch from Django API /api/regions/geojson/
       setLoading(true);
-      fetch(`/api/regions/geojson/?indicator=${indicator}&annee=${year}`)
+      fetch(`/api/regions-geojson/?indicator=${indicator}&annee=${year}`)
         .then(res => {
           if (!res.ok) throw new Error('API failed');
           return res.json();
@@ -132,11 +132,11 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
 
     // Tooltip popup
     layer.bindTooltip(`
-      <div style="font-family: 'Inter', sans-serif; font-size: 13px; color: #1e293b; padding: 2px 4px;">
-        <strong>${regName}</strong><br/>
-        ${label} : <span style="font-weight: 600; color: #059669;">${formattedVal}</span>
+      <div style="font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-primary); background: var(--glass-card-bg); backdrop-filter: blur(8px); padding: 6px 10px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color);">
+        <strong style="display:block; margin-bottom: 2px;">${regName}</strong>
+        ${label} : <span style="font-weight: 700; color: #10b981;">${formattedVal}</span>
       </div>
-    `, { sticky: true, opacity: 0.9 });
+    `, { sticky: true, opacity: 1, direction: 'auto', className: 'custom-tooltip' });
 
     // Click behavior
     layer.on({
@@ -178,7 +178,7 @@ export default function CarteDiiwan({ mockMode, indicator, year, onRegionClick }
   };
 
   return (
-    <div className="w-full h-full flex flex-col relative" style={{ minHeight: '380px' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', minHeight: '380px' }}>
       {loading && (
         <div style={{
           position: 'absolute', top: 10, right: 10, zIndex: 1000,

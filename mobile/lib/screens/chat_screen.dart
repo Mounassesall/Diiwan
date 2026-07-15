@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/chat_provider.dart';
-import '../models/diiwan_response.dart';
+
 import '../widgets/table_widget.dart';
 import '../widgets/chart_widget.dart';
 import 'map_screen.dart';

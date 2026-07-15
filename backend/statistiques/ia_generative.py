@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from google import genai
 from django.conf import settings
 
 def generer_analyse_ia(question: str, donnees: dict) -> str:
@@ -10,8 +10,7 @@ def generer_analyse_ia(question: str, donnees: dict) -> str:
     if not api_key or api_key == "ta_vraie_cle_api_ici":
         return "Clé API Gemini non configurée."
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    client = genai.Client(api_key=api_key)
 
     prompt = f"""
 Tu es un expert en données régionales du Sénégal pour le projet Diiwan.
@@ -28,7 +27,10 @@ répondant à la question à partir de ces données.
 """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
         return response.text
     except Exception as e:
         return f"Erreur lors de l'appel à l'IA : {str(e)}"

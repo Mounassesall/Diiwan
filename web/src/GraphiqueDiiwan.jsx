@@ -17,7 +17,13 @@ export default function GraphiqueDiiwan({ chart }) {
     const ctx = canvasRef.current.getContext('2d');
     
     // Configure default chart styles
-    const configuredDatasets = chart.datasets.map(ds => {
+    const datasetsToUse = chart.datasets || [{
+      label: 'Valeur',
+      data: chart.data ? chart.data.map(d => d.valeur ?? Object.values(d)[1]) : []
+    }];
+    const labelsToUse = chart.labels || (chart.data ? chart.data.map(d => d.annee ?? d.region ?? Object.values(d)[0]) : []);
+
+    const configuredDatasets = datasetsToUse.map(ds => {
       const isLine = chart.type === 'line';
       return {
         ...ds,
@@ -32,7 +38,7 @@ export default function GraphiqueDiiwan({ chart }) {
     chartInstanceRef.current = new Chart(ctx, {
       type: chart.type || 'bar',
       data: {
-        labels: chart.labels,
+        labels: labelsToUse,
         datasets: configuredDatasets
       },
       options: {
@@ -42,7 +48,7 @@ export default function GraphiqueDiiwan({ chart }) {
           legend: {
             position: 'top',
             labels: {
-              color: '#cbd5e1',
+              color: '#64748b',
               font: {
                 family: 'Inter',
                 size: 12,
@@ -62,10 +68,10 @@ export default function GraphiqueDiiwan({ chart }) {
         scales: {
           x: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.06)'
+              color: 'rgba(100, 116, 139, 0.1)'
             },
             ticks: {
-              color: '#94a3b8',
+              color: '#64748b',
               font: {
                 family: 'Inter'
               }
@@ -73,10 +79,10 @@ export default function GraphiqueDiiwan({ chart }) {
           },
           y: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.06)'
+              color: 'rgba(100, 116, 139, 0.1)'
             },
             ticks: {
-              color: '#94a3b8',
+              color: '#64748b',
               font: {
                 family: 'Inter'
               }
@@ -97,7 +103,7 @@ export default function GraphiqueDiiwan({ chart }) {
   if (!chart) return null;
 
   return (
-    <div className="w-full h-full" style={{ position: 'relative', minHeight: '300px' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative', minHeight: '300px' }}>
       <canvas ref={canvasRef} />
     </div>
   );

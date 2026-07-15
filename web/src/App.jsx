@@ -156,14 +156,15 @@ export default function App() {
         <div className="dashboard-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: '16px', gap: '16px', background: 'rgba(15, 23, 42, 0.2)' }}>
           
           {/* Tabs header & Selector controls */}
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', flexShrink: 0 }}>
             
             {/* Visual Tabs toggle buttons */}
-            <div style={{ display: 'flex', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '2px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', gap: '4px' }}>
               <button 
                 onClick={() => setActiveTab('carte')}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer',
+                  boxSizing: 'border-box',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '0 16px', minHeight: '32px', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer',
                   background: activeTab === 'carte' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
                   color: activeTab === 'carte' ? '#10b981' : 'var(--text-secondary)',
                   transition: '0.2s'
@@ -175,7 +176,8 @@ export default function App() {
               <button 
                 onClick={() => setActiveTab('vis')}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer',
+                  boxSizing: 'border-box',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '0 16px', minHeight: '32px', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer',
                   background: activeTab === 'vis' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
                   color: activeTab === 'vis' ? '#10b981' : 'var(--text-secondary)',
                   transition: '0.2s'
@@ -193,7 +195,7 @@ export default function App() {
                   value={selectedIndicator} 
                   onChange={(e) => setSelectedIndicator(e.target.value)}
                   style={{
-                    background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', outline: 'none'
+                    background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s'
                   }}
                 >
                   {INDICATORS.map(ind => (
@@ -205,7 +207,7 @@ export default function App() {
                   value={selectedYear} 
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                   style={{
-                    background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', outline: 'none'
+                    background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', outline: 'none', cursor: 'pointer', transition: 'border-color 0.2s'
                   }}
                 >
                   {YEARS.map(yr => (
@@ -235,7 +237,7 @@ export default function App() {
                       <BarChart2 size={16} style={{ color: '#10b981' }} />
                       Visualisation Graphique
                     </div>
-                    <div style={{ flex: 1, background: 'rgba(15, 23, 42, 0.4)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '16px' }}>
+                    <div style={{ flex: 1, background: 'var(--glass-card-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '16px' }}>
                       <GraphiqueDiiwan chart={activeChart} />
                     </div>
                   </div>
