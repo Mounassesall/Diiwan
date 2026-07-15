@@ -22,7 +22,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final String _baseUrl = const String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'https://diiwan-backend.onrender.com',
   );
 
   List<RegionFeature> _features = [];
