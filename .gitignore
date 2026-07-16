@@ -4,6 +4,8 @@
 *.env
 **/GEMINI_API_KEY*
 **/secrets.json
+*.jks
+**/key.properties
 
 # === Backend Django ===
 backend/.venv/
