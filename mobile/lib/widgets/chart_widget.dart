@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:convert';
 import '../models/diiwan_response.dart';
 
 /// Widget qui affiche un graphique à partir d'un [ChartData].
@@ -31,17 +32,26 @@ class DiiwanChart extends StatelessWidget {
   }
 
   Widget _buildChart(Key key) {
+    // Check if the chart labels/datasets imply a negative indicator
+    final String chartStr = jsonEncode({
+      'type': chartData.type,
+      'labels': chartData.labels,
+      'datasets': chartData.datasets.map((d) => {'label': d.label}).toList(),
+    }).toLowerCase();
+    
+    final bool isNegative = chartStr.contains('chômage') || chartStr.contains('pauvreté') || chartStr.contains('chomage') || chartStr.contains('pauvrete');
+
     switch (chartData.type) {
       case 'line':
-        return _buildLineChart(key);
+        return _buildLineChart(key, isNegative);
       case 'bar':
-        return _buildBarChart(key);
+        return _buildBarChart(key, isNegative);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildLineChart(Key key) {
+  Widget _buildLineChart(Key key, bool isNegative) {
     if (chartData.datasets.isEmpty) return const SizedBox.shrink();
 
     final spots = <FlSpot>[];
@@ -58,11 +68,11 @@ class DiiwanChart extends StatelessWidget {
             spots: spots,
             isCurved: true,
             barWidth: 3,
-            color: const Color(0xFF10B981),
+            color: isNegative ? const Color(0xFFEF4444) : const Color(0xFF10B981),
             dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: isNegative ? const Color(0xFFEF4444).withOpacity(0.1) : const Color(0xFF10B981).withOpacity(0.1),
             ),
           ),
         ],
@@ -98,7 +108,7 @@ class DiiwanChart extends StatelessWidget {
     );
   }
 
-  Widget _buildBarChart(Key key) {
+  Widget _buildBarChart(Key key, bool isNegative) {
     if (chartData.datasets.isEmpty) return const SizedBox.shrink();
 
     final data = chartData.datasets.first.data;
@@ -110,12 +120,9 @@ class DiiwanChart extends StatelessWidget {
           barRods: [
             BarChartRodData(
               toY: data[i],
-              color: const Color(0xFF10B981),
+              color: isNegative ? const Color(0xFFDC2626) : const Color(0xFF10B981),
               width: 16,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(4),
-                topRight: Radius.circular(4),
-              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
             ),
           ],
         ),

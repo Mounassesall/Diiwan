@@ -25,10 +25,20 @@ export default function GraphiqueDiiwan({ chart }) {
 
     const configuredDatasets = datasetsToUse.map(ds => {
       const isLine = chart.type === 'line';
+      const isNegative = /ch[ôo]mage|pauvret[ée]/.test(JSON.stringify(chart).toLowerCase());
+      
+      const defaultBorder = isNegative 
+        ? (isLine ? '#ef4444' : '#dc2626') 
+        : (isLine ? '#10b981' : '#059669');
+        
+      const defaultBg = isNegative 
+        ? (isLine ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.6)') 
+        : (isLine ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.6)');
+
       return {
         ...ds,
-        borderColor: ds.borderColor || (isLine ? '#10b981' : '#059669'),
-        backgroundColor: ds.backgroundColor || (isLine ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.6)'),
+        borderColor: ds.borderColor || defaultBorder,
+        backgroundColor: ds.backgroundColor || defaultBg,
         borderWidth: ds.borderWidth || 2,
         tension: isLine ? 0.3 : 0,
         fill: isLine ? true : false,
