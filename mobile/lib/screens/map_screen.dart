@@ -263,52 +263,60 @@ class _MapScreenState extends State<MapScreen> {
                     // ---- Sélecteur d'indicateur ----
                     Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: DiiwanTheme.surface(isDark),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: DiiwanTheme.border(isDark)),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedIndicator,
-                          isExpanded: true,
-                          dropdownColor: DiiwanTheme.surface(isDark),
-                          style: TextStyle(color: DiiwanTheme.textPrimary(isDark), fontSize: 16),
-                          decoration: InputDecoration(
-                            labelText: 'Indicateur',
-                            labelStyle: TextStyle(color: DiiwanTheme.textSecondary(isDark)),
-                            filled: false,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: DiiwanTheme.surface(isDark),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: DiiwanTheme.border(isDark)),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedIndicator,
+                              isExpanded: true,
+                              dropdownColor: DiiwanTheme.surface(isDark),
+                              style: TextStyle(color: DiiwanTheme.textPrimary(isDark), fontSize: 16),
+                              decoration: InputDecoration(
+                                labelText: 'Indicateur',
+                                labelStyle: TextStyle(color: DiiwanTheme.textSecondary(isDark)),
+                                filled: false,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            items: _indicators
+                                .map((ind) => DropdownMenuItem(
+                                      value: ind,
+                                      child: Text(_indicatorDropdownLabels[ind] ?? ind),
+                                    ))
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() {
+                                  _selectedIndicator = val;
+                                  _loading = true;
+                                });
+                                _loadGeoJson();
+                              }
+                            },
                           ),
-                        items: _indicators
-                            .map((ind) => DropdownMenuItem(
-                                  value: ind,
-                                  child: Text(_indicatorDropdownLabels[ind] ?? ind),
-                                ))
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              _selectedIndicator = val;
-                              _loading = true;
-                            });
-                            _loadGeoJson();
-                          }
-                        },
+                        ),
+                      ),
                       ),
                     ),
-                  ),
 
-                  // ---- Légende (gradient) ----
+                    // ---- Légende (gradient) ----
                     Container(
                       color: const Color(0xFF1E293B),
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: Row(
-                        children: [
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Row(
+                            children: [
                           Text(minVal.toStringAsFixed(0), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                           const SizedBox(width: 8),
                           Expanded(
@@ -329,7 +337,7 @@ class _MapScreenState extends State<MapScreen> {
                           Text(maxVal.toStringAsFixed(0), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                         ],
                       ),
-                    ),
+                    ))),
 
                     // ---- Carte ----
                     Expanded(

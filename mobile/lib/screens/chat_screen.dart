@@ -209,7 +209,10 @@ class _DiiwanChatScreenState extends State<DiiwanChatScreen> {
       body: Consumer<ChatProvider>(
         builder: (context, chat, child) {
           final messages = chat.messages.reversed.toList();
-          return Column(
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: Column(
             children: [
               // Bandeau fictif permanent
               Container(
@@ -406,7 +409,7 @@ class _DiiwanChatScreenState extends State<DiiwanChatScreen> {
                 ),
               ),
             ],
-          );
+          )));
         },
       ),
     );
