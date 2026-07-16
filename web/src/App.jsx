@@ -96,10 +96,7 @@ export default function App() {
           </span>
         </div>
 
-        {/* Fictitious notice banner */}
-        <div className="badge-fictitious hide-on-mobile">
-          <Info size={13} /> Données pédagogiques fictives
-        </div>
+
 
         {/* Control toggles */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>

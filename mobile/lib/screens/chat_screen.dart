@@ -214,33 +214,7 @@ class _DiiwanChatScreenState extends State<DiiwanChatScreen> {
               constraints: const BoxConstraints(maxWidth: 900),
               child: Column(
             children: [
-              // Bandeau fictif permanent
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: DiiwanTheme.surface(isDark), // match web header
-                  border: Border(bottom: BorderSide(color: DiiwanTheme.border(isDark))),
-                ),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: DiiwanTheme.warningBg(isDark),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.warning_amber_rounded, size: 14, color: DiiwanTheme.warningText(isDark)),
-                        const SizedBox(width: 6),
-                        Text('DONNÉES PÉDAGOGIQUES FICTIVES', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: DiiwanTheme.warningText(isDark), letterSpacing: 0.5)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+
 
 
               // Liste des messages (historique de conversation)

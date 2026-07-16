@@ -199,24 +199,7 @@ export default function ChatDiiwan({ mockMode, inputQuestion, setInputQuestion, 
                 )}
               </div>
 
-              {/* Fictitious banner warning */}
-              {!isUser && isFictitious && (
-                <div style={{
-                  fontSize: '12px',
-                  color: '#fbbf24',
-                  display: 'flex',
-                  alignSelf: 'flex-start',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'rgba(245, 158, 11, 0.1)',
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(245, 158, 11, 0.2)',
-                  marginTop: '2px'
-                }}>
-                  <AlertTriangle size={10} /> Données pédagogiques fictives
-                </div>
-              )}
+
             </div>
           );
         })}
