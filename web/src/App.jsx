@@ -91,21 +91,21 @@ export default function App() {
       <header className="glass-panel" style={{ padding: '0 20px', height: '60px' }}>
         <div className="logo-container">
           <span className="logo-text">Diiwan</span>
-          <span style={{ fontSize: '12px', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <span className="hide-on-mobile" style={{ fontSize: '12px', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
             Sénégal Stats AI
           </span>
         </div>
 
         {/* Fictitious notice banner */}
-        <div className="badge-fictitious">
+        <div className="badge-fictitious hide-on-mobile">
           <Info size={13} /> Données pédagogiques fictives
         </div>
 
         {/* Control toggles */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#94a3b8' }}>
-            <span>Mode Démo (Offline)</span>
-            <label className="switch">
+            <span className="hide-on-mobile">Mode Démo (Offline)</span>
+            <label className="switch" title="Mode Démo (Offline)">
               <input 
                 type="checkbox" 
                 checked={mockMode} 
@@ -118,6 +118,7 @@ export default function App() {
           {/* Theme toggle */}
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title="Thème Clair/Sombre"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -135,7 +136,7 @@ export default function App() {
             onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            <span>{theme === 'dark' ? 'Clair' : 'Sombre'}</span>
+            <span className="hide-on-mobile">{theme === 'dark' ? 'Clair' : 'Sombre'}</span>
           </button>
 
           {/* Help button */}

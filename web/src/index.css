@@ -152,6 +152,15 @@ header {
   }
 }
 
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  header {
+    padding: 0 12px !important;
+  }
+}
+
 /* Scrollbar styles */
 ::-webkit-scrollbar {
   width: 6px;
