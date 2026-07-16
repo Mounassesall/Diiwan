@@ -73,7 +73,7 @@ export function queryMockData(question) {
 
   if (isOffTopic) {
     return {
-      answer: "Je suis Diiwan, l'agent conversationnel spécialisé dans les statistiques régionales du Sénégal (données pédagogiques 2020-2024). Je ne peux répondre qu'aux questions portant sur ces thématiques.",
+      answer: "Je suis Diiwan, l'agent conversationnel spécialisé dans les statistiques régionales du Sénégal (2020-2024). Je ne peux répondre qu'aux questions portant sur ces thématiques.",
       table: [],
       chart: null,
       metadata: { fictitious: true, off_topic: true }

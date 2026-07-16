@@ -12,7 +12,7 @@ import '../theme.dart';
 /// Affiche un historique de conversation sous forme de bulles (utilisateur à
 /// droite, réponse de l'agent à gauche), un champ de saisie, un bouton Envoyer,
 /// un indicateur de chargement pendant l'appel réseau, et un bandeau
-/// « Données pédagogiques fictives » quand metadata.fictitious est true.
+/// - Affichage des indicateurs de chargement, sources de données.
 class DiiwanChatScreen extends StatefulWidget {
   final String? prefilledQuestion;
 
